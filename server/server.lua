@@ -49,8 +49,8 @@ local fuelPurchased = {}
 -- Script functions
 -----------------------------------------------------------------------------------------------------------------------------------------
 
-RegisterServerEvent("lc_fuel:serverOpenUI")
-AddEventHandler("lc_fuel:serverOpenUI",function(isElectric, pumpModel, vehicleFuel, vehicleTankSize, vehiclePlate)
+RegisterServerEvent("sao_fuel:serverOpenUI")
+AddEventHandler("sao_fuel:serverOpenUI",function(isElectric, pumpModel, vehicleFuel, vehicleTankSize, vehiclePlate)
     local source = source
     Wrapper(source,function(user_id)
         local gasStationId = getCurrentGasStationId(source)
@@ -58,12 +58,12 @@ AddEventHandler("lc_fuel:serverOpenUI",function(isElectric, pumpModel, vehicleFu
     end)
 end)
 
-RegisterServerEvent("lc_fuel:confirmRefuel")
-AddEventHandler("lc_fuel:confirmRefuel",function(data)
+RegisterServerEvent("sao_fuel:confirmRefuel")
+AddEventHandler("sao_fuel:confirmRefuel",function(data)
     local source = source
     Wrapper(source,function(user_id)
         if not data or data.fuelAmount <= 0 or not isFuelTypeValid(data.selectedFuelType) or not isPaymentMethodValid(data.paymentMethod) then
-            TriggerClientEvent("lc_fuel:Notify", source, "error", Utils.translate('invalid_value'))
+            TriggerClientEvent("sao_fuel:Notify", source, "error", Utils.translate('invalid_value'))
             return
         end
 
@@ -75,12 +75,12 @@ AddEventHandler("lc_fuel:confirmRefuel",function(data)
         local discount = getPlayerDiscountAmount(source)
         local finalPrice = initialPrice * (1 - (discount / 100))
         if Utils.Framework.getPlayerAccountMoney(source, Config.Accounts[data.paymentMethod]) < finalPrice then
-            TriggerClientEvent("lc_fuel:Notify", source, "error", Utils.translate('not_enough_money'):format(Utils.numberFormat(finalPrice)))
+            TriggerClientEvent("sao_fuel:Notify", source, "error", Utils.translate('not_enough_money'):format(Utils.numberFormat(finalPrice)))
             return
         end
 
         if not removeStockFromStation(gasStationId, finalPrice, data.fuelAmount, data.selectedFuelType, false) then
-            TriggerClientEvent("lc_fuel:Notify", source, "error", Utils.translate('not_enough_stock'))
+            TriggerClientEvent("sao_fuel:Notify", source, "error", Utils.translate('not_enough_stock'))
             return
         end
 
@@ -94,14 +94,14 @@ AddEventHandler("lc_fuel:confirmRefuel",function(data)
             pricePerLiter = pricePerLiter,
         }
 
-        TriggerClientEvent("lc_fuel:getPumpNozzle", source, data.fuelAmount, data.selectedFuelType)
-        TriggerClientEvent("lc_fuel:Notify", source, "success", Utils.translate('refuel_paid'):format(Utils.numberFormat(finalPrice)))
+        TriggerClientEvent("sao_fuel:getPumpNozzle", source, data.fuelAmount, data.selectedFuelType)
+        TriggerClientEvent("sao_fuel:Notify", source, "success", Utils.translate('refuel_paid'):format(Utils.numberFormat(finalPrice)))
     end)
 end)
 
 
-RegisterServerEvent("lc_fuel:returnNozzle")
-AddEventHandler("lc_fuel:returnNozzle",function(remainingFuel, isElectric)
+RegisterServerEvent("sao_fuel:returnNozzle")
+AddEventHandler("sao_fuel:returnNozzle",function(remainingFuel, isElectric)
     local source = source
     Wrapper(source,function(user_id)
 
@@ -132,9 +132,9 @@ AddEventHandler("lc_fuel:returnNozzle",function(remainingFuel, isElectric)
         local _, returnedAmount = returnStockToGasStation(gasStationId, amountToReturn, remainingFuel, fuelPurchased[source].selectedFuelType)
 
         if isElectric then
-            TriggerClientEvent("lc_fuel:Notify", source, "success", Utils.translate('returned_charge'):format(Utils.Math.round(remainingFuel, 1), returnedAmount))
+            TriggerClientEvent("sao_fuel:Notify", source, "success", Utils.translate('returned_charge'):format(Utils.Math.round(remainingFuel, 1), returnedAmount))
         else
-            TriggerClientEvent("lc_fuel:Notify", source, "success", Utils.translate('returned_fuel'):format(Utils.Math.round(remainingFuel, 1), returnedAmount))
+            TriggerClientEvent("sao_fuel:Notify", source, "success", Utils.translate('returned_fuel'):format(Utils.Math.round(remainingFuel, 1), returnedAmount))
         end
         Utils.Framework.giveAccountMoney(source, returnedAmount, fuelPurchased[source].account)
 
@@ -142,13 +142,13 @@ AddEventHandler("lc_fuel:returnNozzle",function(remainingFuel, isElectric)
     end)
 end)
 
-RegisterServerEvent("lc_fuel:confirmJerryCanPurchase")
-AddEventHandler("lc_fuel:confirmJerryCanPurchase",function(data)
+RegisterServerEvent("sao_fuel:confirmJerryCanPurchase")
+AddEventHandler("sao_fuel:confirmJerryCanPurchase",function(data)
     if not Config.JerryCan.enabled then return end
     local source = source
     Wrapper(source,function(user_id)
         if not isPaymentMethodValid(data.paymentMethod) then
-            TriggerClientEvent("lc_fuel:Notify", source, "error", Utils.translate('invalid_value'))
+            TriggerClientEvent("sao_fuel:Notify", source, "error", Utils.translate('invalid_value'))
             return
         end
 
@@ -167,17 +167,17 @@ AddEventHandler("lc_fuel:confirmJerryCanPurchase",function(data)
         end
 
         if fuelType == nil then
-            TriggerClientEvent("lc_fuel:Notify", source, "error", Utils.translate('not_enough_stock'))
+            TriggerClientEvent("sao_fuel:Notify", source, "error", Utils.translate('not_enough_stock'))
             return
         end
 
         if Utils.Framework.getPlayerAccountMoney(source, Config.Accounts[data.paymentMethod]) < Config.JerryCan.price then
-            TriggerClientEvent("lc_fuel:Notify", source, "error", Utils.translate('not_enough_money'):format(Config.JerryCan.price))
+            TriggerClientEvent("sao_fuel:Notify", source, "error", Utils.translate('not_enough_money'):format(Config.JerryCan.price))
             return
         end
 
         if not removeStockFromStation(gasStationId, Config.JerryCan.price, Config.JerryCan.requiredStock, fuelType, true) then
-            TriggerClientEvent("lc_fuel:Notify", source, "error", Utils.translate('not_enough_stock'))
+            TriggerClientEvent("sao_fuel:Notify", source, "error", Utils.translate('not_enough_stock'))
             return
         end
         Utils.Framework.tryRemoveAccountMoney(source, Config.JerryCan.price, Config.Accounts[data.paymentMethod])
@@ -189,8 +189,8 @@ AddEventHandler("lc_fuel:confirmJerryCanPurchase",function(data)
             Utils.Framework.givePlayerItem(source, Config.JerryCan.item, 1, Config.JerryCan.metadata)
         end
 
-        TriggerClientEvent("lc_fuel:Notify", source, "success", Utils.translate('jerry_can_paid'):format(Config.JerryCan.price))
-        TriggerClientEvent("lc_fuel:closeUI", source, data.fuelAmount, data.selectedFuelType)
+        TriggerClientEvent("sao_fuel:Notify", source, "success", Utils.translate('jerry_can_paid'):format(Config.JerryCan.price))
+        TriggerClientEvent("sao_fuel:closeUI", source, data.fuelAmount, data.selectedFuelType)
     end)
 end)
 
@@ -217,7 +217,7 @@ function serverOpenUI(source, isElectric, pumpModel, gasStationId, vehicleFuel, 
         data.pricePerLiter[fuelType] = price * (1 - (discount / 100))
     end
 
-    TriggerClientEvent("lc_fuel:clientOpenUI", source, data)
+    TriggerClientEvent("sao_fuel:clientOpenUI", source, data)
 end
 
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -454,12 +454,12 @@ function getPlayerDiscountAmount(source)
     return 0
 end
 
-Utils.Callback.RegisterServerCallback('lc_fuel:getVehicleFuelType', function(source, cb, plate)
+Utils.Callback.RegisterServerCallback('sao_fuel:getVehicleFuelType', function(source, cb, plate)
     cb(getVehicleFuelType(plate))
 end)
 
-RegisterServerEvent("lc_fuel:setVehicleFuelType")
-AddEventHandler("lc_fuel:setVehicleFuelType",function(plate, fuelType)
+RegisterServerEvent("sao_fuel:setVehicleFuelType")
+AddEventHandler("sao_fuel:setVehicleFuelType",function(plate, fuelType)
     setVehicleFuelType(plate, fuelType)
 end)
 
@@ -491,12 +491,12 @@ function cacheplayerVehiclesFuelTypeType()
     for _, value in pairs(queryData) do
         playerVehiclesFuelType[value.plate] = value.fuelType
     end
-    print("^2[lc_fuel] #"..#queryData.." Fuel types successfully fetched from database^7")
+    print("^2[sao_fuel] #"..#queryData.." Fuel types successfully fetched from database^7")
 end
 
 function Wrapper(source,cb)
     if utils_outdated then
-        TriggerClientEvent("lc_fuel:Notify",source,"error","The script requires 'lc_utils' in version "..utils_required_version..", but you currently have version "..Utils.Version..". Please update your 'lc_utils' script to the latest version: https://github.com/LeonardoSoares98/lc_utils/releases/latest/download/lc_utils.zip")
+        TriggerClientEvent("sao_fuel:Notify",source,"error","The script requires 'lc_utils' in version "..utils_required_version..", but you currently have version "..Utils.Version..". Please update your 'lc_utils' script to the latest version: https://github.com/LeonardoSoares98/lc_utils/releases/latest/download/lc_utils.zip")
         return
     end
 
@@ -519,12 +519,12 @@ Citizen.CreateThread(function()
     Wait(1000)
 
     -- Load version number from file
-    local versionFile = LoadResourceFile("lc_fuel", "version")
+    local versionFile = LoadResourceFile("sao_fuel", "version")
     if versionFile then
         version = Utils.Math.trim(versionFile)
-        print("^2[lc_fuel] Loaded! Support discord: https://discord.gg/U5YDgbh ^3[v"..version..subversion.."]^7")
+        print("^2[sao_fuel] Loaded! Support discord: https://discord.gg/U5YDgbh ^3[v"..version..subversion.."]^7")
     else
-        error("^1[lc_fuel] Warning: Could not load the version file.^7")
+        error("^1[sao_fuel] Warning: Could not load the version file.^7")
     end
 
     checkIfFrameworkWasLoaded()
@@ -565,7 +565,7 @@ function checkIfFrameworkWasLoaded()
 end
 
 function checkScriptName()
-    assert(GetCurrentResourceName() == "lc_fuel", "^3The script name does not match the expected resource name. Please ensure that the current resource name is set to '^1lc_fuel^7'.")
+    assert(GetCurrentResourceName() == "sao_fuel", "^3The script name does not match the expected resource name. Please ensure that the current resource name is set to '^1sao_fuel^7'.")
 end
 
 function runCreateTableQueries()

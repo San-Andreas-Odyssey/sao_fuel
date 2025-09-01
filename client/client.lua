@@ -214,10 +214,10 @@ function clientOpenUI(pump, pumpModel, isElectricPump)
         local vehiclePlate = GetVehicleNumberPlateText(closestVehicleToPump)
         local vehicleTankSize = getVehicleTankSize(closestVehicleToPump)
         local vehicleDisplayFuelAmount = getVehicleDisplayFuelAmount(vehicleFuel, vehicleTankSize)
-        TriggerServerEvent("lc_fuel:serverOpenUI", isElectricPump, pumpModel, vehicleDisplayFuelAmount, vehicleTankSize, vehiclePlate)
+        TriggerServerEvent("sao_fuel:serverOpenUI", isElectricPump, pumpModel, vehicleDisplayFuelAmount, vehicleTankSize, vehiclePlate)
     else
         -- Allow the user to open the UI even without vehicles nearby
-        TriggerServerEvent("lc_fuel:serverOpenUI", isElectricPump, pumpModel)
+        TriggerServerEvent("sao_fuel:serverOpenUI", isElectricPump, pumpModel)
     end
 end
 
@@ -247,8 +247,8 @@ function loadNuiVariables()
 end
 
 
-RegisterNetEvent('lc_fuel:clientOpenUI')
-AddEventHandler('lc_fuel:clientOpenUI', function(data)
+RegisterNetEvent('sao_fuel:clientOpenUI')
+AddEventHandler('sao_fuel:clientOpenUI', function(data)
     loadNuiVariables()
     data.currentFuelType = dealWithDefaultFuelType(closestVehicleToPump, data.currentFuelType)
     SendNUIMessage({
@@ -280,7 +280,7 @@ RegisterNUICallback('post', function(body, cb)
         elseif body.event == "changeVehicleFuelType" then
             changeVehicleFuelType(closestVehicleToPump, body.data.selectedFuelType)
         else
-            TriggerServerEvent('lc_fuel:'..body.event,body.data)
+            TriggerServerEvent('sao_fuel:'..body.event,body.data)
         end
         cb(200)
 
@@ -303,8 +303,8 @@ function closeUI()
     SendNUIMessage({ hideMainUI = true })
 end
 
-RegisterNetEvent('lc_fuel:closeUI')
-AddEventHandler('lc_fuel:closeUI', function()
+RegisterNetEvent('sao_fuel:closeUI')
+AddEventHandler('sao_fuel:closeUI', function()
     closeUI()
 end)
 
@@ -351,14 +351,14 @@ function setFuel(vehicle, fuel)
 end
 exports('setFuel', setFuel)
 
--- Alias LegacyFuel's exports to point to our lc_fuel functions:
+-- Alias LegacyFuel's exports to point to our sao_fuel functions:
 AddEventHandler('__cfx_export_LegacyFuel_SetFuel', function(setCB)
-    -- Redirect LegacyFuel:SetFuel to use lc_fuel's SetFuel function
+    -- Redirect LegacyFuel:SetFuel to use sao_fuel's SetFuel function
     setCB(SetFuel)
 end)
 
 AddEventHandler('__cfx_export_LegacyFuel_GetFuel', function(setCB)
-    -- Redirect LegacyFuel:GetFuel to use lc_fuel's GetFuel function
+    -- Redirect LegacyFuel:GetFuel to use sao_fuel's GetFuel function
     setCB(GetFuel)
 end)
 
@@ -370,7 +370,7 @@ function SetFuelType(vehicle, fuelType)
     if not fuelType or fuelType == "nil" or fuelType == "" then
         fuelType = dealWithDefaultFuelType(vehicle, "default")
     end
-    TriggerServerEvent("lc_fuel:setVehicleFuelType", GetVehicleNumberPlateText(vehicle), fuelType)
+    TriggerServerEvent("sao_fuel:setVehicleFuelType", GetVehicleNumberPlateText(vehicle), fuelType)
 end
 exports('SetFuelType', SetFuelType)
 
@@ -386,7 +386,7 @@ exports('setFuelType', setFuelType)
 function getVehicleFuelTypeFromServer(vehicle)
     local returnFuelType = nil
 
-    Utils.Callback.TriggerServerCallback('lc_fuel:getVehicleFuelType', function(fuelType)
+    Utils.Callback.TriggerServerCallback('sao_fuel:getVehicleFuelType', function(fuelType)
         returnFuelType = dealWithDefaultFuelType(vehicle, fuelType)
     end, GetVehicleNumberPlateText(vehicle))
 
@@ -416,7 +416,7 @@ function changeVehicleFuelType(vehicle, fuelType)
     if vehicle and #(playerCoords - GetEntityCoords(vehicle)) < 5 then
         SetFuel(vehicle, 0.0)
         exports['lc_utils']:notify("info",Utils.translate("vehicle_tank_emptied"))
-        TriggerServerEvent("lc_fuel:setVehicleFuelType", GetVehicleNumberPlateText(vehicle), fuelType)
+        TriggerServerEvent("sao_fuel:setVehicleFuelType", GetVehicleNumberPlateText(vehicle), fuelType)
     else
         exports['lc_utils']:notify("error",Utils.translate("vehicle_not_found"))
     end
@@ -662,8 +662,8 @@ function convertConfigVehiclesDisplayNameToHash()
     Config.CustomVehicleParametersHash.default = Config.CustomVehicleParameters.default -- Adds back the default
 end
 
-RegisterNetEvent('lc_fuel:Notify')
-AddEventHandler('lc_fuel:Notify', function(type,message)
+RegisterNetEvent('sao_fuel:Notify')
+AddEventHandler('sao_fuel:Notify', function(type,message)
     exports['lc_utils']:notify(type,message)
 end)
 

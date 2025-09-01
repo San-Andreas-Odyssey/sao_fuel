@@ -11,8 +11,8 @@ local litersDeductedEachTick = 0.5
 -- Refuelling
 -----------------------------------------------------------------------------------------------------------------------------------------
 
-RegisterNetEvent('lc_fuel:getPumpNozzle')
-AddEventHandler('lc_fuel:getPumpNozzle', function(fuelAmountPurchased, fuelTypePurchased)
+RegisterNetEvent('sao_fuel:getPumpNozzle')
+AddEventHandler('sao_fuel:getPumpNozzle', function(fuelAmountPurchased, fuelTypePurchased)
     closeUI()
     if DoesEntityExist(fuelNozzle) then return end
     if not currentPump then return end
@@ -107,7 +107,7 @@ function returnNozzle()
 
         if Config.ReturnNozzleRefund then
             local isElectric = Utils.Table.contains({"electricnormal", "electricfast"}, currentFuelTypePurchased)
-            TriggerServerEvent('lc_fuel:returnNozzle', remainingFuelToRefuel, isElectric)
+            TriggerServerEvent('sao_fuel:returnNozzle', remainingFuelToRefuel, isElectric)
         end
     end
 end
